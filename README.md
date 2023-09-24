@@ -1,1 +1,3 @@
-# my-shell-scripts
+# Devops Learning
+
+This repo is used for my devops related learning
