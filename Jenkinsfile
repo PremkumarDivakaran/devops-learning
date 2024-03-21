@@ -29,11 +29,19 @@ pipeline {
     }
 
     post {
-        success {
-            echo 'Pipeline successful!'
-        }
-        failure {
-            echo 'Pipeline failed!'
+        always {
+            script {
+                def subject = "Pipeline Demo Build Number # ${currentBuild.number} - ${currentBuild.currentResult}"
+                def body = "Pipeline Demo Build Number #  ${currentBuild.number} has ${currentBuild.currentResult}\n\n"
+                body += "Jenkins URL: ${env.BUILD_URL}"
+                sendEmail(subject, body)
+            }
         }
     }
+}
+
+def sendEmail(String subject, String body) {
+    mail to: 'dprem1006@gmail.com',
+         subject: subject,
+         body: body
 }
