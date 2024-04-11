@@ -1,0 +1,18 @@
+Update package -
+sudo apt-get update
+
+Install Java - 
+sudo apt-get install openjdk-11-jdk -y
+
+Install maven -
+sudo apt install -y maven
+
+Install xvfb - 
+sudo apt install -y xvfb
+Xvfb :99&
+export DISPLAY=:99
+
+Install Chrome - 
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo dpkg -i google-chrome-stable_current_amd64.deb
+sudo apt --fix-broken install -y
