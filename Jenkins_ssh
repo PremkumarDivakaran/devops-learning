@@ -1,0 +1,88 @@
+pipeline{
+
+    agent any
+
+    stages{
+
+        stage('Install Dependencies'){
+
+            steps{
+                sshagent(['ssh-ubuntu']){
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ubuntu@${SERVER_IP} '
+                            mkdir dependencies
+                            cd dependencies
+                            git clone https://github.com/PremkumarDivakaran/devops-learning.git
+                            cd devops-learning
+                            sh install_dependencies.sh
+                        '
+                    '''
+                }
+            }
+
+        }
+
+        stage('Git Pull'){
+
+            steps{
+                sshagent(['ssh-ubuntu']){
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ubuntu@${SERVER_IP} '
+                            cd test_code
+                            rm -rf sel-framework
+                            git clone https://github.com/PremkumarDivakaran/sel-framework.git
+                        '
+                    '''
+                }
+            }
+
+        }
+
+        stage('Run Test'){
+            steps{
+                sshagent(['ssh-ubuntu']){
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ubuntu@${SERVER_IP} '
+                            cd test_code
+                            cd sel-framework
+                            mvn clean test
+                        '
+                    '''
+                }
+            }
+        }
+
+        stage('Push Report to S3'){
+            steps{
+                sshagent(['ssh-ubuntu']){
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ubuntu@${SERVER_IP} '
+                            cd test_code
+                            cd sel-framework
+                            rm reports/dummy.html
+                            sudo cp -r reports/ /var/lib/jenkins/workspace/ssh-pipeline/
+                            aws s3 sync reports s3://ubuntu-reports/
+                        '
+                    '''
+                }
+            }
+        }
+
+    }
+
+    post {
+    always {
+        publishHTML(target: [
+            allowMissing: true,
+            alwaysLinkToLastBuild: true,
+            keepAll: true,
+            reportDir: 'reports',
+            reportFiles: 'index.html',
+            reportName: 'My Reports',
+            reportTitles: 'The Report'
+        ])
+    }
+}
+
+
+}
